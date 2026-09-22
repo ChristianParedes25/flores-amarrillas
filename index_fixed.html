@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Girasol Amarillo</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/8zGk67y3/FB-IMG-8408596291127656794.jpg" />
+  <style>
+    /* Estilos limpios */
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --line-color: linear-gradient(to left top, #82ff86 20%, #144425, #104e1c);
+      --flower-center: radial-gradient(circle, #3e2723, #1b0000);
+      --leaf-color: radial-gradient(circle, #82ff86, #104e1c);
+      --petal-color: radial-gradient(circle, #ffeb3b, #fbc02d);
+      --petal-radius: 14vmin; /* distancia radial de los pétalos desde el centro */
+    }
+  /* Fondo nocturno: color oscuro base — las estrellas se añaden en .sky (capa separada) */
+  body{min-height:100vh;display:flex;align-items:flex-end;justify-content:center;position:relative;cursor:default;background:#02021a;color:#fff;font-family:system-ui,Segoe UI,Arial}
+  @keyframes fondoAnimado{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    #neon-text{position:fixed;top:18px;left:50%;transform:translateX(-50%);color:#fff;font-family:Pacifico,cursive;font-size:28px;text-align:center;text-shadow:0 0 5px #fff,0 0 10px #fffc00,0 0 15px #ffeb3b;pointer-events:none;z-index:40}
+    .top-corner{position:fixed;top:12px;right:12px;display:flex;gap:8px;align-items:center;z-index:45}
+    .music-btn{background:rgba(255,255,255,0.95);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:0;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.15);font-size:20px}
+    .special-text{background:rgba(255,255,255,0.9);padding:8px 12px;border-radius:10px;font-weight:600;color:#4a4a4a}
+    /* Bouquet: contenedor central que agrupa varias flores */
+    .bouquet{position:relative;width:100%;height:100vh;display:flex;align-items:center;justify-content:center;gap:6vmin}
+    /* cada flor dentro del ramo */
+    .bouquet .sunflower{position:relative;width:28vmin;height:34vmin;display:inline-block}
+    /* el wrapper se coloca exactamente en el centro de cada flor */
+    .flower_wrapper{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:0;height:0}
+  /* el tallo nace desde el centro y crece hacia abajo (más grueso) */
+  .flower_stem{position:absolute;left:50%;top:50%;transform:translateX(-50%);width:calc(3.8vmin * var(--scale,1));height:calc(36vmin * var(--scale,1));background:linear-gradient(180deg,#2f7b2a,#1f5f20);border-radius:3vmin;transform-origin:top center;z-index:1;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
+  /* el centro está exactamente en el medio del wrapper */
+  .flower_center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(12vmin * var(--scale,1));height:calc(12vmin * var(--scale,1));border-radius:50%;background:var(--flower-center);box-shadow:inset 0 0 20px rgba(0,0,0,0.6);z-index:6}
+
+    /* Pétalos posicionados en el centro y abiertos por rotación con stagger */
+  /* pétalos posicionados en el centro; se rotan y transladan radialmente */
+  .flower_petal{position:absolute;left:50%;top:50%;width:calc(6vmin * var(--scale,1));height:calc(16vmin * var(--scale,1));background:var(--petal-color);clip-path:ellipse(50% 50% at 50% 50%);transform-origin:center center;opacity:0}
+  .flower_petal{transform:translate(-50%,-50%) rotate(0deg) translateY(0) scale(0.22)}
+
+    @keyframes open-petal{
+      0%{transform:translate(-50%,-50%) rotate(0deg) translateY(0) scale(0.22);opacity:0}
+      55%{opacity:1}
+      100%{transform:translate(-50%,-50%) rotate(var(--rot,0deg)) translateY(calc(-1 * var(--petal-radius))) scale(1);opacity:1}
+    }
+
+  /* Detalle visual de pétalos: gradientes, sombras y vetas */
+  .flower_petal{background:linear-gradient(180deg,#fff7b8 0%, #ffd54a 45%, #f2a600 100%);border-radius:52% 52% 40% 40%;box-shadow:0 6px 18px rgba(0,0,0,0.18);z-index:2;will-change:transform,opacity}
+  .flower_petal::before{content:"";position:absolute;left:50%;top:8%;transform:translateX(-50%) rotate(-8deg);width:60%;height:70%;background:linear-gradient(180deg,rgba(255,255,255,0.45) 0%, transparent 55%);border-radius:40%;opacity:0.45}
+
+    /* capa interior de pétalos para mayor realismo */
+  .flower_petal.inner{width:calc(4.6vmin * var(--scale,1));height:calc(12vmin * var(--scale,1));background:linear-gradient(180deg,#fff3a8 0%, #ffd04a 40%, #e89900 100%);--petal-radius:calc(9vmin * var(--scale,1));z-index:3;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.12))}
+    .flower_petal.inner::before{opacity:0.35}
+
+    /* Centro más texturizado (semillas) */
+    .flower_center{background:radial-gradient(circle at 30% 30%, #6b3b1b 0 8%, #4b2a12 9% 30%, #2b1608 60%), repeating-radial-gradient(circle at center, rgba(0,0,0,0.06) 0 1px, transparent 1px 4px);box-shadow:inset 0 6px 18px rgba(0,0,0,0.6);}
+    .flower_center::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;height:78%;border-radius:50%;background:repeating-radial-gradient(circle at center, rgba(0,0,0,0.25) 0 1px, rgba(0,0,0,0.02) 1px 6px);opacity:0.95;mix-blend-mode:multiply}
+
+  /* Valores de rotación y delays para cubrir 360° */
+    .flower_petal-1{--rot:0deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0s}
+    .flower_petal-2{--rot:30deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.08s}
+    .flower_petal-3{--rot:60deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.16s}
+    .flower_petal-4{--rot:90deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.24s}
+    .flower_petal-5{--rot:120deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.32s}
+    .flower_petal-6{--rot:150deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.40s}
+    .flower_petal-7{--rot:180deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.48s}
+    .flower_petal-8{--rot:210deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.56s}
+    .flower_petal-9{--rot:240deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.64s}
+    .flower_petal-10{--rot:270deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.72s}
+    .flower_petal-11{--rot:300deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.80s}
+    .flower_petal-12{--rot:330deg;animation:open-petal 0.9s cubic-bezier(.2,.9,.2,1) forwards;animation-delay:0.88s}
+    p#text{position:fixed;left:12px;bottom:12px;color:#dcdcdc;font-family:Pacifico,cursive;font-size:18px;z-index:40}
+    @media (max-width:720px){#neon-text{font-size:20px}}
+
+    /* Canvas starfield: full-screen canvas used for animated background */
+    canvas#canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;pointer-events:none}
+
+    /* asegurar que la flor esté por encima del canvas */
+    .bouquet{position:relative;width:100%;height:100vh;display:flex;align-items:center;justify-content:center;gap:6vmin;z-index:20}
+
+    .sunflower{cursor:pointer;user-select:none;transition:transform .2s ease}
+    .sunflower:active{transform:scale(0.98)}
+
+    .petal-burst{position:absolute;left:50%;top:50%;width:14px;height:22px;border-radius:50% 50% 45% 45%;background:linear-gradient(180deg,#fff7b8 0%, #ffd54a 45%, #f2a600 100%);box-shadow:0 4px 10px rgba(0,0,0,.18);pointer-events:none;transform:translate(-50%,-50%);opacity:0;animation:petalBurst .9s ease-out forwards;z-index:50}
+    .petal-burst::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,rgba(255,255,255,.55),transparent 65%);}
+
+    @keyframes petalBurst{
+      0% {opacity:1; transform:translate(-50%,-50%) scale(0.6) rotate(0deg); }
+      20% {opacity:1; }
+      100% {opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="neon-text">Estos girasoles son para ti 🌻</div>
+  <div class="top-corner">
+    <button class="music-btn" id="musicBtn" aria-label="Reproducir / Pausar música"><span class="btn-icon">🎵</span></button>
+    <div class="special-text">Para ti, con todo mi aprecio 💛</div>
+  </div>
+
+  <audio id="bgAudio" loop>
+    <source src="https://github.com/Baque2005/Organizador/raw/refs/heads/master/Floricienta%20-%20Flores%20Amarillas%20(Official%20Video).mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Canvas de estrellas (reemplaza la antigua .sky) -->
+  <canvas id="canvas" aria-hidden="true"></canvas>
+
+  <div class="bouquet">
+    <!-- un solo girasol centrado (reversión del ramo) -->
+    <div class="sunflower" style="--scale:1;">
+      <div class="flower_wrapper">
+        <div class="flower_stem"></div>
+        <div class="flower_center"></div>
+        <div class="flower_petal flower_petal-1"></div>
+        <div class="flower_petal flower_petal-2"></div>
+        <div class="flower_petal flower_petal-3"></div>
+        <div class="flower_petal flower_petal-4"></div>
+        <div class="flower_petal flower_petal-5"></div>
+        <div class="flower_petal flower_petal-6"></div>
+        <div class="flower_petal flower_petal-7"></div>
+        <div class="flower_petal flower_petal-8"></div>
+        <div class="flower_petal flower_petal-9"></div>
+        <div class="flower_petal flower_petal-10"></div>
+        <div class="flower_petal flower_petal-11"></div>
+        <div class="flower_petal flower_petal-12"></div>
+        <!-- capa interior de pétalos -->
+        <div class="flower_petal inner flower_petal-1"></div>
+        <div class="flower_petal inner flower_petal-2"></div>
+        <div class="flower_petal inner flower_petal-3"></div>
+        <div class="flower_petal inner flower_petal-4"></div>
+        <div class="flower_petal inner flower_petal-5"></div>
+        <div class="flower_petal inner flower_petal-6"></div>
+        <div class="flower_petal inner flower_petal-7"></div>
+        <div class="flower_petal inner flower_petal-8"></div>
+        <div class="flower_petal inner flower_petal-9"></div>
+        <div class="flower_petal inner flower_petal-10"></div>
+        <div class="flower_petal inner flower_petal-11"></div>
+        <div class="flower_petal inner flower_petal-12"></div>
+      </div>
+    </div>
+  </div>
+
+  <p id="text">Un girasol para iluminar tu día</p>
+  <script>
+    // Canvas starfield: estrellas estáticas + estrellas fugaces (adaptado del snippet del usuario)
+    (function(){
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Estrellas estáticas de fondo
+      const staticStars = [];
+      const NUM_STATIC = 200;
+      for (let i = 0; i < NUM_STATIC; i++) {
+        staticStars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.5 + 0.3,
+          alpha: Math.random() * 0.7 + 0.3,
+        });
+      }
+
+      function drawStaticStars() {
+        staticStars.forEach(s => {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+          ctx.fill();
+        });
+      }
+
+      // Estrellas fugaces
+      class ShootingStar {
+        constructor() { this.reset(); }
+        reset(){
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height * 0.5;
+          this.speed = Math.random() * 8 + 4;
+          this.angle = Math.PI / 4 + (Math.random() * 0.4 - 0.2);
+          this.vx = Math.cos(this.angle) * this.speed;
+          this.vy = Math.sin(this.angle) * this.speed;
+          this.length = Math.random() * 120 + 60;
+          this.alpha = 1;
+          this.width = Math.random() * 2 + 0.5;
+          const colors = ['255,255,255', '180,220,255', '255,240,180'];
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.life = 1;
+          this.decay = Math.random() * 0.015 + 0.008;
+        }
+        update(){ this.x += this.vx; this.y += this.vy; this.life -= this.decay; this.alpha = this.life; }
+        draw(){
+          const tailX = this.x - this.vx * (this.length / this.speed);
+          const tailY = this.y - this.vy * (this.length / this.speed);
+          const gradient = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
+          gradient.addColorStop(0, `rgba(${this.color}, 0)`);
+          gradient.addColorStop(1, `rgba(${this.color}, ${this.alpha})`);
+          ctx.beginPath();
+          ctx.moveTo(tailX, tailY);
+          ctx.lineTo(this.x, this.y);
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = this.width;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.width * 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+          ctx.fill();
+        }
+        isDead(){
+          return (this.life <= 0 || this.x > canvas.width + 100 || this.y > canvas.height + 100);
+        }
+      }
+
+      const shootingStars = [];
+      const MAX_SHOOTING = 6;
+      function spawnStar(){ if (shootingStars.length < MAX_SHOOTING && Math.random() < 0.03) shootingStars.push(new ShootingStar()); }
+
+      function animate(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        // fondo radial
+        const bg = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width*0.8);
+        bg.addColorStop(0, '#0d0d2b');
+        bg.addColorStop(1, '#000005');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+        drawStaticStars();
+        spawnStar();
+        for (let i = shootingStars.length - 1; i >= 0; i--){
+          shootingStars[i].update();
+          shootingStars[i].draw();
+          if (shootingStars[i].isDead()) shootingStars.splice(i,1);
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+  </script>
+
+  <script>
+    // Manejador seguro de audio + botón
+    (function(){
+      const audio = document.getElementById('bgAudio');
+      const btn = document.getElementById('musicBtn');
+      const icon = btn ? btn.querySelector('.btn-icon') : null;
+      const flower = document.querySelector('.sunflower');
+      let playing = false;
+
+      function setAudioState(isPlaying){
+        if(!audio || !icon || !btn) return;
+        if(isPlaying){
+          audio.play().catch(()=>{});
+          icon.textContent='⏸️';
+          btn.classList.add('playing');
+          playing = true;
+        } else {
+          audio.pause();
+          icon.textContent='🎵';
+          btn.classList.remove('playing');
+          playing = false;
+        }
+      }
+
+      function toggleMusic(){
+        setAudioState(!playing);
+      }
+
+      function triggerPetalBurst(){
+        if(!flower) return;
+
+        const count = 18;
+        const centerX = flower.offsetWidth / 2;
+        const centerY = flower.offsetHeight / 2;
+
+        for (let i = 0; i < count; i++) {
+          const petal = document.createElement('span');
+          petal.className = 'petal-burst';
+
+          const angle = (Math.PI * 2 * i) / count;
+          const distance = 40 + Math.random() * 110;
+          const dx = Math.cos(angle) * distance;
+          const dy = Math.sin(angle) * distance - 18;
+
+          petal.style.left = `${centerX}px`;
+          petal.style.top = `${centerY}px`;
+          petal.style.setProperty('--dx', `${dx}px`);
+          petal.style.setProperty('--dy', `${dy}px`);
+          petal.style.setProperty('--rot', `${(Math.random() * 260 - 130).toFixed(1)}deg`);
+
+          flower.appendChild(petal);
+          setTimeout(() => petal.remove(), 900);
+        }
+      }
+
+      window.toggleMusic = toggleMusic; // expone por si hay llamadas inline
+
+      btn && btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMusic(); });
+      flower && flower.addEventListener('click', (e)=>{ e.stopPropagation(); triggerPetalBurst(); });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          setAudioState(false);
+        }
+      });
+
+      window.addEventListener('pagehide', () => {
+        if (audio) audio.pause();
+      });
+
+      window.addEventListener('load', ()=>{
+        if(!audio) return;
+        setAudioState(true);
+      });
+    })();
+  </script>
+</body>
+</html>
